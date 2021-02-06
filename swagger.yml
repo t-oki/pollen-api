@@ -1,0 +1,122 @@
+openapi: 3.0.0
+info:
+  title: pollen
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /areas:
+    get:
+      summary: 地域一覧.
+      tags: []
+      operationId: get-areas
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Area'
+    parameters: []
+  /areas{id}:
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: 地域詳細
+      tags: []
+      operationId: get-areas-id
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  observatories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Observatory'
+  /observatory/{id}:
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: 観測所詳細
+      tags: []
+      operationId: get-observatory-id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                from:
+                  type: string
+                  minLength: 1
+                to:
+                  type: string
+                  minLength: 1
+              required:
+                - from
+                - to
+            examples:
+              2021/1/1から2021/1/2まで:
+                value:
+                  from: '2021-01-01'
+                  to: '2021-01-02'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pollen'
+components:
+  schemas:
+    Area:
+      title: Area
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 関東地域
+    Observatory:
+      title: Observatory
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: (茨城県)水戸石川一般環境大気測定局
+    Pollen:
+      title: Pollen
+      type: object
+      properties:
+        date:
+          type: string
+          example: '2021-01-01'
+        time:
+          type: integer
+          example: 0
+        pollenCount:
+          type: integer
+          example: 0
