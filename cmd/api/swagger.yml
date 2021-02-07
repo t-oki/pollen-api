@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
   title: pollen
   version: '1.0'
@@ -104,6 +104,9 @@ components:
         id:
           type: integer
           example: 1
+        prefecture:
+          type: string
+          example: 東京
         name:
           type: string
           example: (茨城県)水戸石川一般環境大気測定局
@@ -119,4 +122,21 @@ components:
           example: 0
         pollenCount:
           type: integer
+          description: 個/m3 
+          example: 0
+        windDirection:
+          type: string
+          enum: ["静穏","北北東","北東",東北東",東","東南東","南東","南南東","南","南南西","南西","西南西","西","西北西","北西","北北西","北"]
+          example: "静穏"
+        windSpeed:
+          type: integer
+          description: m/s
+          example: 1
+        temperature:
+          type: integer
+          description: ℃
+          example: 20
+        rainfall:
+          type: integer
+          description: mm
           example: 0
