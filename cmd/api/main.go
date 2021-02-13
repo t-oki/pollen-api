@@ -35,7 +35,7 @@ func main() {
 	handler := handler.NewHandler(pollenRepo)
 	e.GET("/areas", handler.ListAreas)
 	e.GET("/areas/:id", handler.GetArea)
-	e.GET("/observatory/:id", handler.GetObservatory)
+	e.GET("/observatories/:id", handler.GetObservatory)
 
 	e.Start(":" + *port)
 }

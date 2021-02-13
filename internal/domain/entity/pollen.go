@@ -11,4 +11,6 @@ type Pollen []struct {
 	Rainfall      int
 }
 
-type PollenRepository interface{}
+type PollenRepository interface {
+	FetchPollen(observatoryID int64, from, to time.Time) error
+}
