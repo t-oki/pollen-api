@@ -7,5 +7,6 @@ require (
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5 // indirect
+	github.com/pkg/errors v0.8.1
 	github.com/sclevine/agouti v3.0.0+incompatible
 )

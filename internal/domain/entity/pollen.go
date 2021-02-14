@@ -12,5 +12,5 @@ type Pollen []struct {
 }
 
 type PollenRepository interface {
-	FetchPollen(observatoryID int64, from, to time.Time) error
+	FetchPollen(areaName string, observatoryID int64, from, to time.Time) error
 }

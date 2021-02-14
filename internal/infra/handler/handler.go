@@ -56,7 +56,7 @@ func (h *Handler) GetObservatory(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 	log.Info(fmt.Sprintf("id: %d, param: %v", id, param))
-	if err := h.pollenRepo.FetchPollen(id, from, to); err != nil {
+	if err := h.pollenRepo.FetchPollen("関東地域", id, from, to); err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
