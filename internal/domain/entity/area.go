@@ -1,5 +1,11 @@
 package entity
 
+import "errors"
+
+var (
+	ErrAreaNotExist = errors.New("Area doesn't exist")
+)
+
 type Area struct {
 	ID   int64
 	Name string
@@ -8,10 +14,19 @@ type Area struct {
 func ListAreas() []Area {
 	return []Area{
 		{3, "関東地域"},
-		{5, "中部地域"},
-		{6, "関西地域"},
-		{7, "中国・四国地域"},
-		{8, "九州地域"},
+		// {5, "中部地域"},
+		// {6, "関西地域"},
+		// {7, "中国・四国地域"},
+		// {8, "九州地域"},
+	}
+}
+
+func GetArea(id int64) (Area, error) {
+	switch id {
+	case 3:
+		return Area{3, "関東地域"}, nil
+	default:
+		return Area{}, ErrAreaNotExist
 	}
 }
 
@@ -21,7 +36,7 @@ type Observatory struct {
 	Name       string
 }
 
-func (e Area) ListObservatories() []Observatory {
+func (e Area) ListObservatories() ([]Observatory, error) {
 	switch e.ID {
 	// 関東地域
 	case 3:
@@ -46,9 +61,9 @@ func (e Area) ListObservatories() []Observatory {
 			{18, "神奈川県", "神奈川県庁第二分庁舎"},
 			{19, "神奈川県", "川崎生命科学・環境研究センター"},
 			{20, "神奈川県", "神奈川県環境科学センター"},
-		}
+		}, nil
 	default:
 		// 他地域はTODO
-		return []Observatory{}
+		return []Observatory{}, ErrAreaNotExist
 	}
 }
