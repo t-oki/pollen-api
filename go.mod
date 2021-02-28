@@ -9,4 +9,5 @@ require (
 	github.com/onsi/gomega v1.10.5 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/sclevine/agouti v3.0.0+incompatible
+	golang.org/x/text v0.3.5 // indirect
 )

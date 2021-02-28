@@ -22,7 +22,7 @@ func NewHandler(pollenRepo entity.PollenRepository) *Handler {
 }
 
 type ListAreasOutput struct {
-	details []ListAreasOutputDetail
+	Details []ListAreasOutputDetail
 }
 type ListAreasOutputDetail struct {
 	ID   int64  `json:"id"`
@@ -31,13 +31,13 @@ type ListAreasOutputDetail struct {
 
 func ToListAreasOutput(areas []entity.Area) ListAreasOutput {
 	res := make([]ListAreasOutputDetail, len(areas))
-	for _, v := range areas {
-		res = append(res, ListAreasOutputDetail{
+	for i, v := range areas {
+		res[i] = ListAreasOutputDetail{
 			ID:   v.ID,
 			Name: v.Name,
-		})
+		}
 	}
-	return ListAreasOutput{details: res}
+	return ListAreasOutput{Details: res}
 }
 
 func (h *Handler) ListAreas(c echo.Context) error {
@@ -57,17 +57,17 @@ type GetAreaOutput struct {
 type GetAreaOutputObservatory struct {
 	ID         int64  `json:"id"`
 	Prefecture string `json:"prefecture"`
-	Name       string `json:"name`
+	Name       string `json:"name"`
 }
 
 func ToGetAreaOutput(area entity.Area, observatories []entity.Observatory) GetAreaOutput {
 	observatoriesRes := make([]GetAreaOutputObservatory, len(observatories))
-	for _, v := range observatories {
-		observatoriesRes = append(observatoriesRes, GetAreaOutputObservatory{
+	for i, v := range observatories {
+		observatoriesRes[i] = GetAreaOutputObservatory{
 			ID:         v.ID,
 			Prefecture: v.Prefecture,
 			Name:       v.Name,
-		})
+		}
 	}
 	return GetAreaOutput{
 		ID:            area.ID,
@@ -79,6 +79,7 @@ func ToGetAreaOutput(area entity.Area, observatories []entity.Observatory) GetAr
 func (h *Handler) GetArea(c echo.Context) error {
 	param := GetAreaInput{}
 	c.Bind(&param)
+	log.Info(fmt.Sprintf("param: %v", param))
 	area, err := entity.GetArea(param.ID)
 	if err != nil {
 		if err == entity.ErrAreaNotExist {
@@ -120,7 +121,8 @@ func (h *Handler) GetObservatory(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 	log.Info(fmt.Sprintf("id: %d, param: %v", id, param))
-	if err := h.pollenRepo.FetchPollen("関東地域", id, from, to); err != nil {
+	_, err = h.pollenRepo.FetchPollen("関東地域", id, from, to)
+	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, nil)
 	}

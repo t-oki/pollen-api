@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-type Pollen []struct {
+type Pollen struct {
 	Datetime      time.Time
 	PollenCount   int
 	WindDirection string
@@ -12,5 +12,5 @@ type Pollen []struct {
 }
 
 type PollenRepository interface {
-	FetchPollen(areaName string, observatoryID int64, from, to time.Time) error
+	FetchPollen(areaName string, observatoryID int64, from, to time.Time) ([]Pollen, error)
 }
