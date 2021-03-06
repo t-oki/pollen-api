@@ -100,7 +100,12 @@ type GetObservatoryInput struct {
 }
 
 func (h *Handler) GetObservatory(c echo.Context) error {
-	id, err := strconv.ParseInt(c.Param("id"), 0, 64)
+	areaID, err := strconv.ParseInt(c.Param("area_id"), 0, 64)
+	if err != nil {
+		log.Error(err.Error())
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	observatoryID, err := strconv.ParseInt(c.Param("observatory_id"), 0, 64)
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, nil)
@@ -120,11 +125,21 @@ func (h *Handler) GetObservatory(c echo.Context) error {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	log.Info(fmt.Sprintf("id: %d, param: %v", id, param))
-	_, err = h.pollenRepo.FetchPollen("関東地域", id, from, to)
+	area, err := entity.GetArea(areaID)
+	if err != nil {
+		log.Error(err.Error())
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	observatory, err := entity.GetObservatory(area, observatoryID)
+	if err != nil {
+		log.Error(err.Error())
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	log.Info(fmt.Sprintf("areaID: %d, observatoryID: %d, param: %v", areaID, observatoryID, param))
+	res, err := h.pollenRepo.FetchPollen(area, observatory, from, to)
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
-	return c.JSON(http.StatusNotImplemented, nil)
+	return APIResponseOK(c, res)
 }

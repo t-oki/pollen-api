@@ -4,13 +4,13 @@ import "time"
 
 type Pollen struct {
 	Datetime      time.Time
-	PollenCount   int
-	WindDirection string
-	WindSpeed     int
-	Temperature   int
-	Rainfall      int
+	PollenCount   *int64
+	WindDirection *string
+	WindSpeed     *int64
+	Temperature   *float64
+	Rainfall      *int64
 }
 
 type PollenRepository interface {
-	FetchPollen(areaName string, observatoryID int64, from, to time.Time) ([]Pollen, error)
+	FetchPollen(area Area, observatory Observatory, from, to time.Time) ([]Pollen, error)
 }

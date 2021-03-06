@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
 	"strings"
 
@@ -35,7 +36,7 @@ func main() {
 	handler := handler.NewHandler(pollenRepo)
 	e.GET("/areas", handler.ListAreas)
 	e.GET("/areas/:id", handler.GetArea)
-	e.GET("/observatories/:id", handler.GetObservatory)
+	e.GET("/areas/:area_id/observatories/:observatory_id", handler.GetObservatory)
 
-	e.Start(":" + *port)
+	log.Fatal(e.Start(":" + *port))
 }

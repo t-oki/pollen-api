@@ -45,7 +45,3 @@ func APIResponseError(c echo.Context, httpStatus int, message string, err error)
 	log.Error(err.Error())
 	return err
 }
-
-func APIResponseResourceNotFound(c echo.Context) error {
-	return c.JSON(http.StatusBadRequest, APIErrorResponse{Code: "400-000", Errors: []string{"RESOURCE_NOT_FOUND"}})
-}

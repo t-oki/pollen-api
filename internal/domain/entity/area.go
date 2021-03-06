@@ -3,7 +3,8 @@ package entity
 import "errors"
 
 var (
-	ErrAreaNotExist = errors.New("Area doesn't exist")
+	ErrAreaNotExist        = errors.New("Area doesn't exist")
+	ErrObservatoryNotExist = errors.New("Observatory doesn't exist")
 )
 
 type Area struct {
@@ -66,4 +67,17 @@ func (e Area) ListObservatories() ([]Observatory, error) {
 		// 他地域はTODO
 		return []Observatory{}, ErrAreaNotExist
 	}
+}
+
+func GetObservatory(area Area, observatoryID int64) (Observatory, error) {
+	observatories, err := area.ListObservatories()
+	if err != nil {
+		return Observatory{}, nil
+	}
+	for _, v := range observatories {
+		if v.ID == observatoryID {
+			return v, nil
+		}
+	}
+	return Observatory{}, ErrObservatoryNotExist
 }
