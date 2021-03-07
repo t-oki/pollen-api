@@ -115,14 +115,20 @@ func (h *Handler) GetObservatory(c echo.Context) error {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, nil)
 	}
+	log.Info(fmt.Sprintf("areaID: %d, observatoryID: %d, param: %v", areaID, observatoryID, param))
+
 	from, err := time.Parse(datetimeFormat, param.From)
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	to, err := time.Parse(datetimeFormat, param.From)
+	to, err := time.Parse(datetimeFormat, param.To)
 	if err != nil {
 		log.Error(err.Error())
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	if from.After(time.Now()) || from.After(to.Add(-1*time.Hour)) {
+		log.Errorf("from or to is wrong, from: %v, to: %v", from, to)
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 	area, err := entity.GetArea(areaID)
@@ -135,7 +141,6 @@ func (h *Handler) GetObservatory(c echo.Context) error {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	log.Info(fmt.Sprintf("areaID: %d, observatoryID: %d, param: %v", areaID, observatoryID, param))
 	res, err := h.pollenRepo.FetchPollen(area, observatory, from, to)
 	if err != nil {
 		log.Error(err.Error())
