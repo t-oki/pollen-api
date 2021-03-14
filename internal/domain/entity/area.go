@@ -1,11 +1,10 @@
 package entity
 
-import "errors"
+type NotFoundError struct {
+	Name string
+}
 
-var (
-	ErrAreaNotExist        = errors.New("Area doesn't exist")
-	ErrObservatoryNotExist = errors.New("Observatory doesn't exist")
-)
+func (e *NotFoundError) Error() string { return e.Name + ": not found" }
 
 type Area struct {
 	ID   int64
@@ -27,7 +26,7 @@ func GetArea(id int64) (Area, error) {
 	case 3:
 		return Area{3, "関東地域"}, nil
 	default:
-		return Area{}, ErrAreaNotExist
+		return Area{}, &NotFoundError{Name: "Area"}
 	}
 }
 
@@ -65,7 +64,7 @@ func (e Area) ListObservatories() ([]Observatory, error) {
 		}, nil
 	default:
 		// 他地域はTODO
-		return []Observatory{}, ErrAreaNotExist
+		return []Observatory{}, &NotFoundError{Name: "Area"}
 	}
 }
 
@@ -79,5 +78,5 @@ func GetObservatory(area Area, observatoryID int64) (Observatory, error) {
 			return v, nil
 		}
 	}
-	return Observatory{}, ErrObservatoryNotExist
+	return Observatory{}, &NotFoundError{Name: "Observatory"}
 }

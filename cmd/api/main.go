@@ -8,8 +8,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/t-oki/pollen-api/internal/api/handler"
 	"github.com/t-oki/pollen-api/internal/infra/hanako"
-	"github.com/t-oki/pollen-api/internal/infra/handler"
 )
 
 var port = flag.String("port", "8080", "port to listen")

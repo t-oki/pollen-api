@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -44,10 +45,6 @@ func (h *Handler) ListAreas(c echo.Context) error {
 	return APIResponseOK(c, ToListAreasOutput(entity.ListAreas()))
 }
 
-type GetAreaInput struct {
-	ID int64 `path:"id"`
-}
-
 type GetAreaOutput struct {
 	ID            int64                      `json:"id"`
 	Name          string                     `json:"name"`
@@ -77,13 +74,16 @@ func ToGetAreaOutput(area entity.Area, observatories []entity.Observatory) GetAr
 }
 
 func (h *Handler) GetArea(c echo.Context) error {
-	param := GetAreaInput{}
-	c.Bind(&param)
-	log.Info(fmt.Sprintf("param: %v", param))
-	area, err := entity.GetArea(param.ID)
+	areaID, err := strconv.ParseInt(c.Param("id"), 0, 64)
 	if err != nil {
-		if err == entity.ErrAreaNotExist {
-			return APIResponse(c, http.StatusBadRequest, "リクエストが不正です")
+		return APIResponseError(c, http.StatusBadRequest, "リクエストが不正です", err)
+	}
+	log.Info(fmt.Sprintf("ID: %v", areaID))
+	area, err := entity.GetArea(areaID)
+	if err != nil {
+		var e *entity.NotFoundError
+		if errors.As(err, &e) {
+			return APIResponseError(c, http.StatusBadRequest, "リクエストが不正です", e)
 		}
 		return APIResponseError(c, http.StatusInternalServerError, "サーバエラーが起きました", err)
 	}
@@ -95,56 +95,60 @@ func (h *Handler) GetArea(c echo.Context) error {
 }
 
 type GetObservatoryInput struct {
-	From string `json:"from"`
-	To   string `json:"to"`
+	From string `json:"from" form:"from" query:"from"`
+	To   string `json:"to" form:"to" query:"to"`
 }
 
 func (h *Handler) GetObservatory(c echo.Context) error {
 	areaID, err := strconv.ParseInt(c.Param("area_id"), 0, 64)
 	if err != nil {
-		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 	observatoryID, err := strconv.ParseInt(c.Param("observatory_id"), 0, 64)
 	if err != nil {
-		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 	param := GetObservatoryInput{}
 	if err := c.Bind(&param); err != nil {
-		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 	log.Info(fmt.Sprintf("areaID: %d, observatoryID: %d, param: %v", areaID, observatoryID, param))
 
 	from, err := time.Parse(datetimeFormat, param.From)
 	if err != nil {
-		log.Error(err.Error())
-		return c.JSON(http.StatusBadRequest, nil)
+		return APIResponseError(c, http.StatusBadRequest, "リクエストが不正です", err)
 	}
 	to, err := time.Parse(datetimeFormat, param.To)
 	if err != nil {
-		log.Error(err.Error())
-		return c.JSON(http.StatusBadRequest, nil)
+		return APIResponseError(c, http.StatusBadRequest, "リクエストが不正です", err)
 	}
 	if from.After(time.Now()) || from.After(to.Add(-1*time.Hour)) {
-		log.Errorf("from or to is wrong, from: %v, to: %v", from, to)
-		return c.JSON(http.StatusBadRequest, nil)
+		return APIResponseError(c, http.StatusBadRequest, "リクエストが不正です", fmt.Errorf("from or to is wrong, from: %v, to: %v", from, to))
 	}
+
 	area, err := entity.GetArea(areaID)
 	if err != nil {
-		log.Error(err.Error())
-		return c.JSON(http.StatusBadRequest, nil)
+		var e *entity.NotFoundError
+		if errors.As(err, &e) {
+			return APIResponseError(c, http.StatusBadRequest, "リクエストが不正です", e)
+		}
+		return APIResponseError(c, http.StatusInternalServerError, "サーバエラーが起きました", err)
 	}
 	observatory, err := entity.GetObservatory(area, observatoryID)
 	if err != nil {
-		log.Error(err.Error())
-		return c.JSON(http.StatusBadRequest, nil)
+		var e *entity.NotFoundError
+		if errors.As(err, &e) {
+			return APIResponseError(c, http.StatusBadRequest, "リクエストが不正です", e)
+		}
+		return APIResponseError(c, http.StatusInternalServerError, "サーバエラーが起きました", err)
 	}
 	res, err := h.pollenRepo.FetchPollen(area, observatory, from, to)
 	if err != nil {
-		log.Error(err.Error())
-		return c.JSON(http.StatusInternalServerError, nil)
+		var e *entity.NotFoundError
+		if errors.As(err, &e) {
+			return APIResponseError(c, http.StatusBadRequest, "リクエストが不正です", e)
+		}
+		return APIResponseError(c, http.StatusInternalServerError, "サーバエラーが起きました", err)
 	}
 	return APIResponseOK(c, res)
 }

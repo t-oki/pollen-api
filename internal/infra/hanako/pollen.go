@@ -2,6 +2,7 @@ package hanako
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -9,7 +10,6 @@ import (
 	"time"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 	"github.com/sclevine/agouti"
 	"github.com/t-oki/pollen-api/internal/domain/entity"
 )
@@ -38,12 +38,12 @@ func (r *PollenRepositoryImpl) FetchPollen(area entity.Area, observatory entity.
 			}),
 	)
 	if err := driver.Start(); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("driver.Start: %w", err)
 	}
 	defer driver.Stop()
 	page, err := driver.NewPage(agouti.Browser("chrome"))
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("driver.NewPage: %w", err)
 	}
 	var result interface{}
 	session := page.Session()
@@ -57,40 +57,40 @@ func (r *PollenRepositoryImpl) FetchPollen(area entity.Area, observatory entity.
 		log.Errorf("Failed to Send: %v", err)
 	}
 	if err := page.Navigate("http://kafun.taiki.go.jp/DownLoad1.aspx"); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("page.Navigate: %w", err)
 	}
 	if err := page.FindByID("ddlStartYear").Select(strconv.Itoa(fromYear)); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlStartYear: %w", err)
 	}
 	if err := page.FindByID("ddlStartMonth").Select(strconv.Itoa(int(fromMonth))); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlStartMonth: %w", err)
 	}
 	if err := page.FindByID("ddlStartDay").Select(strconv.Itoa(fromDay)); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlStartDay: %w", err)
 	}
 	if err := page.FindByID("ddlStartHour").Select(strconv.Itoa(fromHour)); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlStartHour: %w", err)
 	}
 	if err := page.FindByID("ddlEndYear").Select(strconv.Itoa(toYear)); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlEndYear: %w", err)
 	}
 	if err := page.FindByID("ddlEndMonth").Select(strconv.Itoa(int(toMonth))); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlEndMonth: %w", err)
 	}
 	if err := page.FindByID("ddlEndDay").Select(strconv.Itoa(toDay)); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlEndDay: %w", err)
 	}
 	if err := page.FindByID("ddlEndHour").Select(strconv.Itoa(toHour)); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlEndHour: %w", err)
 	}
 	if err := page.FindByID("ddlArea").Select(area.Name); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("ddlArea: %w", err)
 	}
 	if err := page.FirstByName(fmt.Sprintf("CheckBoxMstList$%d", observatory.ID-1)).Click(); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("CheckBoxMstList: %w", err)
 	}
 	if err := page.FindByID("download").Click(); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("download: %w", err)
 	}
 	// ダウンロードが完了するまでセッションを確保する
 	time.Sleep(time.Millisecond * 100)
@@ -105,7 +105,7 @@ func (r *PollenRepositoryImpl) FetchPollen(area entity.Area, observatory entity.
 	res := make([]entity.Pollen, 0)
 	for {
 		line, err := csvReader.Read()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		} else if err != nil {
 			return nil, err
